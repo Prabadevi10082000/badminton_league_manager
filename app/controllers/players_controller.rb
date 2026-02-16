@@ -1,12 +1,27 @@
-class Player < ApplicationRecord
-  validates :name, presence: true, uniqueness: true
+class PlayersController < ApplicationController
+  def index
+    players = Player.all
+    render json: players
+  end
 
-  has_many :matches_as_player_a, class_name: "Match", foreign_key: :player_a_id
-  has_many :matches_as_player_b, class_name: "Match", foreign_key: :player_b_id
+  def create
+    player = Player.new(player_params)
+    if player.save
+      render json: player, status: :created
+    else
+      render json: { errors: player.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
 
-  def win_percentage
-    total = wins + losses
-    return 0 if total.zero?
-    ((wins.to_f / total) * 100).round(2)
+  def destroy
+    player = Player.find(params[:id])
+    player.destroy
+    render json: { message: "Player deleted successfully" }
+  end
+
+  private
+
+  def player_params
+    params.require(:player).permit(:name)
   end
 end
