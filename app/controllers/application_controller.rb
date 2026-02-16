@@ -1,12 +1,15 @@
-class Player < ApplicationRecord
-  validates :name, presence: true, uniqueness: true
+class ApplicationController < ActionController::API
 
-  has_many :matches_as_player_a, class_name: "Match", foreign_key: :player_a_id
-  has_many :matches_as_player_b, class_name: "Match", foreign_key: :player_b_id
+  rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
+  rescue_from ActionController::ParameterMissing, with: :parameter_missing
 
-  def win_percentage
-    total = wins + losses
-    return 0 if total.zero?
-    ((wins.to_f / total) * 100).round(2)
+  private
+
+  def record_not_found(exception)
+    render json: { error: exception.message }, status: :not_found
+  end
+
+  def parameter_missing(exception)
+    render json: { error: exception.message }, status: :bad_request
   end
 end
